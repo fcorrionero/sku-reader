@@ -27,14 +27,14 @@ func main() {
 		os.Exit(1)
 	}
 	defer l.Close()
-	for i:=0;i<5;i++ {
-		createClient(l, cancel)
+	for i := 0; i < 5; i++ {
+		go createClient(l, cancel)
 	}
-	<- ctx.Done()
+	<-ctx.Done()
 	fmt.Println("PROCESS FINISHED")
 }
 
-func createClient(l net.Listener,cancel context.CancelFunc) {
+func createClient(l net.Listener, cancel context.CancelFunc) {
 	c, err := l.Accept()
 	if err != nil {
 		fmt.Println("Error connecting:", err.Error())
@@ -43,7 +43,7 @@ func createClient(l net.Listener,cancel context.CancelFunc) {
 	fmt.Println("Client connected.")
 	fmt.Println("Client " + c.RemoteAddr().String() + " connected.")
 
-	go handleConnection(c, cancel, l)
+	handleConnection(c, cancel, l)
 }
 
 func handleConnection(conn net.Conn, cancel context.CancelFunc, l net.Listener) {

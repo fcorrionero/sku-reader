@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 func main() {
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 
 	fmt.Println("Starting " + connType + " server on " + host + ":" + port)
 
@@ -28,13 +29,13 @@ func main() {
 	}
 	defer l.Close()
 	for i := 0; i < 5; i++ {
-		go createClient(l, cancel)
+		go createClient(l, cancel, ctx)
 	}
 	<-ctx.Done()
 	fmt.Println("PROCESS FINISHED")
 }
 
-func createClient(l net.Listener, cancel context.CancelFunc) {
+func createClient(l net.Listener, cancel context.CancelFunc, ctx context.Context) {
 	c, err := l.Accept()
 	if err != nil {
 		fmt.Println("Error connecting:", err.Error())
@@ -43,26 +44,31 @@ func createClient(l net.Listener, cancel context.CancelFunc) {
 	fmt.Println("Client connected.")
 	fmt.Println("Client " + c.RemoteAddr().String() + " connected.")
 
-	handleConnection(c, cancel, l)
+	handleConnection(c, cancel, l, ctx)
 }
 
-func handleConnection(conn net.Conn, cancel context.CancelFunc, l net.Listener) {
+func handleConnection(conn net.Conn, cancel context.CancelFunc, l net.Listener, ctx context.Context) {
 	for {
-		buffer, err := bufio.NewReader(conn).ReadBytes('\n')
-
-		if err != nil {
-			fmt.Println("Client left.")
-			conn.Close()
-
-			createClient(l, cancel)
+		select {
+		case <-ctx.Done():
 			return
-		}
+		default:
+			buffer, err := bufio.NewReader(conn).ReadBytes('\n')
 
-		log.Println("Client message:", string(buffer[:len(buffer)-1]))
+			if err != nil {
+				fmt.Println("Client left.")
+				conn.Close()
 
-		conn.Write(buffer)
-		if string(buffer[:len(buffer)-1]) == "k" {
-			cancel()
+				createClient(l, cancel, ctx)
+				return
+			}
+
+			log.Println("Client message:", string(buffer[:len(buffer)-1]))
+
+			conn.Write(buffer)
+			if string(buffer[:len(buffer)-1]) == "k" {
+				cancel()
+			}
 		}
 	}
 

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	timeReading    = 10 * time.Second
+	timeReading    = 60 * time.Second
 	socketHost     = "localhost"
 	socketPort     = "4000"
 	connType       = "tcp"
@@ -50,7 +50,7 @@ func main() {
 		Database:       database,
 	}
 
-	skuController := sku_reader.InitializeSkuController(ctx, listener, config)
+	skuController := sku_reader.InitializeSkuController(context.Background(), listener, config)
 
 	// UUID could be used but since we only can use standard library we use time instead
 	sessionId := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
@@ -66,6 +66,7 @@ func main() {
 			log.Println("PROCESS FINISHED")
 			return
 		case <-ctx.Done():
+			skuController.GenerateReport(sessionId)
 			log.Println("PROCESS FINISHED")
 			return
 		}

@@ -36,7 +36,7 @@ func (repository MessageMongoRepository) Save(message *domain.Message) error {
 func (repository MessageMongoRepository) FindAll(id string) []*domain.Message {
 	var messages []*domain.Message
 
-	filter := bson.M{"sessionId": id}
+	filter := bson.M{"sessionid": id}
 	cursor, err := repository.collection.Find(repository.ctx, filter)
 	if err != nil {
 		log.Println(err)

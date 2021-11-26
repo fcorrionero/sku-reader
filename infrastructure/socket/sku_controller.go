@@ -14,7 +14,6 @@ type SkuController struct {
 	generateReportQueryHandler  application.GenerateReportQueryHandler
 	listener                    net.Listener
 	ctx                         context.Context
-	cancel                      context.CancelFunc
 }
 
 func NewSkuController(
@@ -22,18 +21,16 @@ func NewSkuController(
 	generateReportQueryHandler application.GenerateReportQueryHandler,
 	listener net.Listener,
 	ctx context.Context,
-	cancel context.CancelFunc,
 ) SkuController {
 	return SkuController{
 		createMessageCommandHandler: createMessageCommandHandler,
 		generateReportQueryHandler:  generateReportQueryHandler,
 		listener:                    listener,
 		ctx:                         ctx,
-		cancel:                      cancel,
 	}
 }
 
-func (controller SkuController) HandleConnections(sessionId string, endSequence string) {
+func (controller SkuController) HandleConnections(sessionId string, endSequence string, finishReading chan bool) {
 	conn, err := controller.listener.Accept()
 	if err != nil {
 		return
@@ -42,7 +39,7 @@ func (controller SkuController) HandleConnections(sessionId string, endSequence 
 
 	for {
 		select {
-		case <-controller.ctx.Done():
+		case <-finishReading:
 			return
 		default:
 			buffer, err := bufio.NewReader(conn).ReadString('\n')
@@ -54,11 +51,17 @@ func (controller SkuController) HandleConnections(sessionId string, endSequence 
 					return
 				}
 
-				controller.HandleConnections(sessionId, endSequence)
+				controller.HandleConnections(sessionId, endSequence, finishReading)
 				return
 			}
 
 			log.Println("client message:", buffer[:len(buffer)-1])
+
+			if buffer[:len(buffer)-1] == endSequence {
+				close(finishReading)
+				return
+			}
+
 			createMessageCommand := application.CreateMessageCommand{
 				SessionId: sessionId,
 				SKU:       buffer[:len(buffer)-1],
@@ -67,10 +70,6 @@ func (controller SkuController) HandleConnections(sessionId string, endSequence 
 			if err != nil {
 				log.Fatalf("error creating message: %v", err.Error())
 				return
-			}
-
-			if buffer[:len(buffer)-1] == endSequence {
-				controller.cancel()
 			}
 		}
 	}

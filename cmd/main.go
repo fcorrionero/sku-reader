@@ -5,10 +5,12 @@ import (
 	"log"
 	"net"
 	sku_reader "sku-reader"
+	"strconv"
 	"time"
 )
 
 const (
+	timeReading    = 10 * time.Second
 	socketHost     = "localhost"
 	socketPort     = "4000"
 	connType       = "tcp"
@@ -24,7 +26,8 @@ const (
 
 func main() {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeReading)
+	defer cancel()
 	log.Println("Starting " + connType + " server on " + socketHost + ":" + socketPort)
 
 	listener, err := net.Listen(connType, socketHost+":"+socketPort)
@@ -47,15 +50,25 @@ func main() {
 		Database:       database,
 	}
 
-	skuController := sku_reader.InitializeSkuController(ctx, listener, cancel, config)
+	skuController := sku_reader.InitializeSkuController(ctx, listener, config)
 
-	// It is better to use a UUID but since we only can use standard library we use time instead
-	sessionId := time.Now().String()
+	// UUID could be used but since we only can use standard library we use time instead
+	sessionId := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
+	finishReading := make(chan bool)
 
 	for i := 0; i < connNumber; i++ {
-		go skuController.HandleConnections(sessionId, endSequence)
+		go skuController.HandleConnections(sessionId, endSequence, finishReading)
 	}
-	<-ctx.Done()
-	skuController.GenerateReport(sessionId)
-	log.Println("PROCESS FINISHED")
+	for {
+		select {
+		case <-finishReading:
+			skuController.GenerateReport(sessionId)
+			log.Println("PROCESS FINISHED")
+			return
+		case <-ctx.Done():
+			log.Println("PROCESS FINISHED")
+			return
+		}
+	}
+
 }

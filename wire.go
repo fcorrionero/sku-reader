@@ -64,7 +64,6 @@ func initializeGenerateReportQueryHandler(repository domain.MessageRepository) a
 func InitializeSkuController(
 	ctx context.Context,
 	listener net.Listener,
-	cancel context.CancelFunc,
 	cfg Config) socket.SkuController {
 	wire.Build(
 		initializeMongoDbRepository,

@@ -22,14 +22,14 @@ func TestMessagesShouldBeCreated(t *testing.T) {
 
 	for _, tc := range tests {
 		m := domain.NewMessage(id, tc.sku)
-		if m.SessionId() != id {
-			t.Fatalf("sessionId invalid, expected: %v, got: %v", id, m.SessionId())
+		if m.SessionId != id {
+			t.Fatalf("sessionId invalid, expected: %v, got: %v", id, m.SessionId)
 		}
-		if m.SKU() != tc.sku {
-			t.Fatalf("sku invalid, expected: %v, got: %v", tc.sku, m.SKU())
+		if m.Sku != tc.sku {
+			t.Fatalf("sku invalid, expected: %v, got: %v", tc.sku, m.Sku)
 		}
-		if m.Discard() != tc.discard {
-			t.Fatalf("discard invalid, expected: %v, got: %v", tc.discard, m.Discard())
+		if m.Discard != tc.discard {
+			t.Fatalf("discard invalid, expected: %v, got: %v", tc.discard, m.Discard)
 		}
 	}
 }

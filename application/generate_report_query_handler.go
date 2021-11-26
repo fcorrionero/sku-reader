@@ -34,12 +34,12 @@ func (handler *GenerateReportQueryHandler) Handle(query GenerateReportQuery) Rep
 	messages := handler.messageRepository.FindAll(query.SessionId)
 
 	for _, m := range messages {
-		unique := handler.skuUnique(m.SKU(), skus)
+		unique := handler.skuUnique(m.Sku, skus)
 		if unique {
 			report.Unique++
 		}
-		skus = append(skus, m.SKU())
-		if m.Discard() {
+		skus = append(skus, m.Sku)
+		if m.Discard {
 			report.Discarded++
 		}
 		report.Received++

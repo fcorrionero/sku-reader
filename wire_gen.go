@@ -38,11 +38,11 @@ func initializeGenerateReportQueryHandler(repository domain.MessageRepository) a
 	return generateReportQueryHandler
 }
 
-func InitializeSkuController(ctx context.Context, listener net.Listener, cancel context.CancelFunc, cfg Config) socket.SkuController {
+func InitializeSkuController(ctx context.Context, listener net.Listener, cfg Config) socket.SkuController {
 	messageMongoRepository := initializeMongoDbRepository(ctx, cfg)
 	createMessageCommandHandler := initializeCreateMessageCommandHandler(messageMongoRepository)
 	generateReportQueryHandler := initializeGenerateReportQueryHandler(messageMongoRepository)
-	skuController := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx, cancel)
+	skuController := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
 	return skuController
 }
 

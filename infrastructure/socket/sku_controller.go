@@ -79,5 +79,5 @@ func (controller SkuController) GenerateReport(sessionId string) {
 	query := application.GenerateReportQuery{SessionId: sessionId}
 	reportDto := controller.generateReportQueryHandler.Handle(query)
 
-	log.Println(fmt.Sprintf("Received %d unique product skus, %d duplicates, %d discard values", reportDto.Unique, (reportDto.Received - reportDto.Unique), reportDto.Discarded))
+	log.Println(fmt.Sprintf("Received %d unique product skus, %d duplicates, %d discard values", reportDto.Unique, (reportDto.Received - reportDto.Unique - reportDto.Discarded), reportDto.Discarded))
 }

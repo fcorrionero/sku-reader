@@ -9,21 +9,6 @@ import (
 	"time"
 )
 
-const (
-	timeReading    = 60 * time.Second
-	socketHost     = "localhost"
-	socketPort     = "4000"
-	connType       = "tcp"
-	connNumber     = 5
-	endSequence    = "terminate"
-	mongoHost      = "localhost"
-	mongoPort      = "27017"
-	username       = "user"
-	password       = "password"
-	collectionName = "messages"
-	database       = "sku_reader"
-)
-
 func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeReading)
@@ -50,7 +35,9 @@ func main() {
 		Database:       database,
 	}
 
-	skuController := sku_reader.InitializeSkuController(context.Background(), listener, config)
+	ctxConnections, cancelConnections := context.WithCancel(context.Background())
+	defer cancelConnections()
+	skuController := sku_reader.InitializeSkuController(ctxConnections, listener, config)
 
 	// UUID could be used but since we only can use standard library we use time instead
 	sessionId := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)

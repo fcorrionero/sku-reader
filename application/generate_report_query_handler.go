@@ -35,7 +35,7 @@ func (handler *GenerateReportQueryHandler) Handle(query GenerateReportQuery) Rep
 
 	for _, m := range messages {
 		unique := handler.skuUnique(m.Sku, skus)
-		if unique {
+		if unique && !m.Discard {
 			report.Unique++
 		}
 		skus = append(skus, m.Sku)

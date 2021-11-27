@@ -1,3 +1,6 @@
+//go:build unit
+// +build unit
+
 package application_test
 
 import (
@@ -42,7 +45,7 @@ func TestGenerateReport(t *testing.T) {
 
 	expectedReportDTO := application.ReportDTO{
 		Received:  6,
-		Unique:    5,
+		Unique:    1,
 		Discarded: 4,
 	}
 

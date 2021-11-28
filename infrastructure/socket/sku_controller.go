@@ -30,7 +30,7 @@ func NewSkuController(
 	}
 }
 
-func (controller SkuController) HandleConnections(sessionId string, endSequence string, finishReading chan bool) {
+func (controller SkuController) HandleConnections(sessionId string, endSequence string, finishReading chan bool, errorStream chan interface{}) {
 	conn, err := controller.listener.Accept()
 	if err != nil {
 		return
@@ -47,11 +47,11 @@ func (controller SkuController) HandleConnections(sessionId string, endSequence 
 			if err != nil {
 				err := conn.Close()
 				if err != nil {
-					log.Fatal(err)
+					errorStream <- err
 					return
 				}
 
-				controller.HandleConnections(sessionId, endSequence, finishReading)
+				controller.HandleConnections(sessionId, endSequence, finishReading, errorStream)
 				return
 			}
 
@@ -68,16 +68,16 @@ func (controller SkuController) HandleConnections(sessionId string, endSequence 
 			}
 			err = controller.createMessageCommandHandler.Handle(createMessageCommand)
 			if err != nil {
-				log.Fatalf("error creating message: %v", err.Error())
+				errorStream <- err
 				return
 			}
 		}
 	}
 }
 
-func (controller SkuController) GenerateReport(sessionId string) {
+func (controller SkuController) GenerateReport(sessionId string) string {
 	query := application.GenerateReportQuery{SessionId: sessionId}
 	reportDto := controller.generateReportQueryHandler.Handle(query)
 
-	log.Println(fmt.Sprintf("Received %d unique product skus, %d duplicates, %d discard values", reportDto.Unique, (reportDto.Received - reportDto.Unique - reportDto.Discarded), reportDto.Discarded))
+	return fmt.Sprintf("Received %d unique product skus, %d duplicates, %d discard values", reportDto.Unique, (reportDto.Received - reportDto.Unique - reportDto.Discarded), reportDto.Discarded)
 }

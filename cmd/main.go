@@ -42,18 +42,24 @@ func main() {
 	// UUID could be used but since we only can use standard library we use time instead
 	sessionId := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	finishReading := make(chan bool)
+	errorStream := make(chan interface{})
 
 	for i := 0; i < connNumber; i++ {
-		go skuController.HandleConnections(sessionId, endSequence, finishReading)
+		go skuController.HandleConnections(sessionId, endSequence, finishReading, errorStream)
 	}
 	for {
 		select {
+		case err := <-errorStream:
+			// Proper error handling should be added, metrics server, etc
+			log.Fatal(err)
 		case <-finishReading:
-			skuController.GenerateReport(sessionId)
+			report := skuController.GenerateReport(sessionId)
+			log.Println(report)
 			log.Println("PROCESS FINISHED")
 			return
 		case <-ctx.Done():
-			skuController.GenerateReport(sessionId)
+			report := skuController.GenerateReport(sessionId)
+			log.Println(report)
 			log.Println("PROCESS FINISHED")
 			return
 		}

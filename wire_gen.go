@@ -38,8 +38,9 @@ func initializeGenerateReportQueryHandler(repository domain.MessageRepository) a
 	return generateReportQueryHandler
 }
 
-func InitializeSkuController(ctx context.Context, listener net.Listener, cfg Config) socket.SkuController {
-	messageMongoRepository := initializeMongoDbRepository(ctx, cfg)
+func InitializeSkuController(ctx context.Context, listener net.Listener) socket.SkuController {
+	config := getConfig()
+	messageMongoRepository := initializeMongoDbRepository(ctx, config)
 	createMessageCommandHandler := initializeCreateMessageCommandHandler(messageMongoRepository)
 	generateReportQueryHandler := initializeGenerateReportQueryHandler(messageMongoRepository)
 	skuController := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
@@ -74,4 +75,15 @@ func createMongoDbClient(ctx context.Context, cfg Config) *mongo.Client {
 
 func initializeMongoDbCollection(mongoClient *mongo.Client, cfg Config) *mongo.Collection {
 	return mongoClient.Database(cfg.Database).Collection(cfg.CollectionName)
+}
+
+func getConfig() Config {
+	return Config{
+		Host:           MongoHost,
+		Port:           MongoPort,
+		UserName:       Username,
+		Password:       Password,
+		CollectionName: CollectionName,
+		Database:       Database,
+	}
 }

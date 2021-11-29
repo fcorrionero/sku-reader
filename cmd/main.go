@@ -9,28 +9,13 @@ import (
 	"time"
 )
 
-const (
-	timeReading    = 60 * time.Second
-	socketHost     = "localhost"
-	socketPort     = "4000"
-	connType       = "tcp"
-	connNumber     = 5
-	endSequence    = "terminate"
-	mongoHost      = "localhost"
-	mongoPort      = "27017"
-	username       = "user"
-	password       = "password"
-	collectionName = "messages"
-	database       = "sku_reader"
-)
-
 func main() {
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeReading)
+	ctx, cancel := context.WithTimeout(context.Background(), sku_reader.TimeReading)
 	defer cancel()
-	log.Println("Starting " + connType + " server on " + socketHost + ":" + socketPort)
+	log.Println("Starting " + sku_reader.ConnType + " server on " + sku_reader.SocketHost + ":" + sku_reader.SocketPort)
 
-	listener, err := net.Listen(connType, socketHost+":"+socketPort)
+	listener, err := net.Listen(sku_reader.ConnType, sku_reader.SocketHost+":"+sku_reader.SocketPort)
 	defer func(l net.Listener) {
 		err := l.Close()
 		if err != nil {
@@ -42,26 +27,17 @@ func main() {
 		log.Fatalf("error listening: %v", err.Error())
 	}
 
-	config := sku_reader.Config{
-		Host:           mongoHost,
-		Port:           mongoPort,
-		UserName:       username,
-		Password:       password,
-		CollectionName: collectionName,
-		Database:       database,
-	}
-
 	ctxConnections, cancelConnections := context.WithCancel(context.Background())
 	defer cancelConnections()
-	skuController := sku_reader.InitializeSkuController(ctxConnections, listener, config)
+	skuController := sku_reader.InitializeSkuController(ctxConnections, listener)
 
 	// UUID could be used but since we only can use standard library we use time instead
 	sessionId := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	finishReading := make(chan bool)
 	errorStream := make(chan interface{})
 
-	for i := 0; i < connNumber; i++ {
-		go skuController.HandleConnections(sessionId, endSequence, finishReading, errorStream)
+	for i := 0; i < sku_reader.ConnNumber; i++ {
+		go skuController.HandleConnections(sessionId, sku_reader.EndSequence, finishReading, errorStream)
 	}
 	for {
 		select {

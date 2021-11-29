@@ -61,11 +61,22 @@ func initializeGenerateReportQueryHandler(repository domain.MessageRepository) a
 	return application.GenerateReportQueryHandler{}
 }
 
+func getConfig() Config {
+	return Config{
+		Host:           MongoHost,
+		Port:           MongoPort,
+		UserName:       Username,
+		Password:       Password,
+		CollectionName: CollectionName,
+		Database:       Database,
+	}
+}
+
 func InitializeSkuController(
 	ctx context.Context,
-	listener net.Listener,
-	cfg Config) socket.SkuController {
+	listener net.Listener) socket.SkuController {
 	wire.Build(
+		getConfig,
 		initializeMongoDbRepository,
 		wire.Bind(new(domain.MessageRepository), new(persistence.MessageMongoRepository)),
 		initializeCreateMessageCommandHandler,

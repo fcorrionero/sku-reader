@@ -1,3 +1,7 @@
+build:
+	mkdir -p build
+	cd cmd && go build -o ../build/sku_reader
+
 setup-env:
 	cd etc/dev/docker && docker-compose up -d
 
@@ -11,5 +15,5 @@ integration-test: setup-env
 	go test -tags=integration ./...
 	cd etc/dev/docker && docker-compose down
 
-run: setup-env
-	go run cmd/main.go
+run: build setup-env
+	cd build && ./sku_reader

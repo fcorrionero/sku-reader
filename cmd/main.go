@@ -37,6 +37,7 @@ func main() {
 			log.Fatalf("error closing connection: %v", err.Error())
 		}
 	}(listener)
+
 	if err != nil {
 		log.Fatalf("error listening: %v", err.Error())
 	}

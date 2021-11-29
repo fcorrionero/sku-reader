@@ -79,6 +79,34 @@ func TestSaveMethodShouldThrowAnError(t *testing.T) {
 	}
 }
 
+func TestMessagesShouldBeFound(t *testing.T) {
+	ctx := context.Background()
+	mongoClient := createMongoClient(ctx)
+	collection := createMongoCollection(mongoClient)
+
+	defer cleanUp(mongoClient, collection, ctx)
+	id := "1"
+
+	message1 := domain.NewMessage(id, "test-1111")
+	message2 := domain.NewMessage(id, "test-2222")
+	_, err := collection.InsertOne(ctx, &message1)
+	if err != nil {
+		t.Fail()
+	}
+	_, err = collection.InsertOne(ctx, &message2)
+	if err != nil {
+		t.Fail()
+	}
+
+	repository := persistence.NewMongoRepository(mongoClient, collection, ctx)
+
+	messages := repository.FindAll(id)
+	if len(messages) != 2 {
+		t.Fatalf("expected to find %v messages, got %v", 2, len(messages))
+	}
+
+}
+
 func cleanUp(client *mongo.Client, collection *mongo.Collection, ctx context.Context) {
 
 	err := collection.Drop(ctx)

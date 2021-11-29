@@ -1,6 +1,10 @@
 package application
 
-import "sku-reader/domain"
+import (
+	"log"
+	"os"
+	"sku-reader/domain"
+)
 
 type GenerateReportQuery struct {
 	SessionId string
@@ -37,12 +41,17 @@ func (handler *GenerateReportQueryHandler) Handle(query GenerateReportQuery) Rep
 		unique := handler.skuUnique(m.Sku, skus)
 		if unique && !m.Discard {
 			report.Unique++
+			skus = append(skus, m.Sku)
 		}
-		skus = append(skus, m.Sku)
 		if m.Discard {
 			report.Discarded++
 		}
 		report.Received++
+	}
+
+	err := handler.generateLogFile(skus)
+	if err != nil {
+		log.Println("error generating skus log file: " + err.Error())
 	}
 
 	return report
@@ -56,4 +65,19 @@ func (handler *GenerateReportQueryHandler) skuUnique(sku string, skus []string) 
 	}
 
 	return true
+}
+
+func (handler *GenerateReportQueryHandler) generateLogFile(skus []string) error {
+	file, err := os.OpenFile("skus.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	log.SetOutput(file)
+	for _, sku := range skus {
+		log.Println(sku)
+	}
+
+	return nil
 }

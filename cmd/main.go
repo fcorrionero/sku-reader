@@ -9,6 +9,21 @@ import (
 	"time"
 )
 
+const (
+	timeReading    = 60 * time.Second
+	socketHost     = "localhost"
+	socketPort     = "4000"
+	connType       = "tcp"
+	connNumber     = 5
+	endSequence    = "terminate"
+	mongoHost      = "localhost"
+	mongoPort      = "27017"
+	username       = "user"
+	password       = "password"
+	collectionName = "messages"
+	database       = "sku_reader"
+)
+
 func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeReading)
@@ -51,6 +66,7 @@ func main() {
 		select {
 		case err := <-errorStream:
 			// Proper error handling should be added, metrics server, etc
+			close(finishReading)
 			log.Fatal(err)
 		case <-finishReading:
 			report := skuController.GenerateReport(sessionId)

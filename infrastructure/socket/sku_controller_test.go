@@ -40,6 +40,7 @@ func TestShouldHandleConnections(t *testing.T) {
 	defer cancelCtx()
 	finishReading := make(chan bool)
 	errorStream := make(chan interface{})
+	defer func() { close(finishReading) }()
 
 	createMessageCommandHandler := application.NewCreateMessageCommandHandler(repository)
 	generateReportQueryHandler := application.NewGenerateReportQueryHandler(repository)
@@ -111,6 +112,7 @@ func TestShouldEndWhenEndSequenceIsPresent(t *testing.T) {
 		case <-finishReading:
 			return
 		case <-ctx.Done():
+			close(finishReading)
 			t.Fatalf("expected to end test when end sequence: %v is written in host", END_SEQUENCE)
 		}
 
@@ -159,6 +161,7 @@ func TestShouldEndWhenErrorIsPresent(t *testing.T) {
 	for {
 		select {
 		case <-errorStream:
+			close(finishReading)
 			return
 		case <-ctx.Done():
 			t.Fatalf("expected to end test when error is present")

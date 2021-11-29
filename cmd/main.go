@@ -66,7 +66,6 @@ func main() {
 		select {
 		case err := <-errorStream:
 			// Proper error handling should be added, metrics server, etc
-			close(finishReading)
 			log.Fatal(err)
 		case <-finishReading:
 			report := skuController.GenerateReport(sessionId)

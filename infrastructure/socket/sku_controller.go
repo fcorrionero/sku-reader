@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"sku-reader/application"
+	"time"
 )
 
 type SkuController struct {
@@ -30,7 +32,7 @@ func NewSkuController(
 	}
 }
 
-func (controller SkuController) HandleConnections(sessionId string, endSequence string, finishReading chan bool, errorStream chan interface{}) {
+func (controller *SkuController) HandleConnections(sessionId string, endSequence string, finishReading chan bool, errorStream chan interface{}) {
 	conn, err := controller.listener.Accept()
 	if err != nil {
 		return
@@ -75,9 +77,30 @@ func (controller SkuController) HandleConnections(sessionId string, endSequence 
 	}
 }
 
-func (controller SkuController) GenerateReport(sessionId string) string {
+func (controller *SkuController) GenerateReport(sessionId string) string {
 	query := application.GenerateReportQuery{SessionId: sessionId}
 	reportDto := controller.generateReportQueryHandler.Handle(query)
+	err := controller.generateLogFile(reportDto.Skus)
+	if err != nil {
+		log.Println("error writting skus to log file : " + err.Error())
+	}
 
 	return fmt.Sprintf("Received %d unique product skus, %d duplicates, %d discard values", reportDto.Unique, reportDto.Received-reportDto.Unique-reportDto.Discarded, reportDto.Discarded)
+}
+
+func (controller *SkuController) generateLogFile(skus []string) error {
+	file, err := os.OpenFile("skus.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, sku := range skus {
+		_, err = file.WriteString(fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), sku))
+		if err != nil {
+			log.Println("error writting skus to log file : " + err.Error())
+		}
+	}
+
+	return nil
 }

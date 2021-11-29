@@ -38,4 +38,7 @@ func TestGenerateReport(t *testing.T) {
 	if report.Discarded != expectedReportDTO.Discarded {
 		t.Fatalf("discarded fail, expected: %v, got: %v", expectedReportDTO.Discarded, report.Discarded)
 	}
+	if len(report.Skus) != report.Unique {
+		t.Fatalf("expected 1 sku, got: %v", len(report.Skus))
+	}
 }

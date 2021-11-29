@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"sku-reader/application"
 	"sku-reader/application/mock"
 	"sku-reader/infrastructure/socket"
@@ -196,6 +197,11 @@ func TestShouldGenerateReport(t *testing.T) {
 
 	if actualReport != expectedReport {
 		t.Fatalf("expected: %v \n got: %v", expectedReport, actualReport)
+	}
+
+	err = os.Remove("skus.log")
+	if err != nil {
+		t.Fatalf("skus.log file should be present")
 	}
 
 }

@@ -1,8 +1,6 @@
 package application
 
 import (
-	"log"
-	"os"
 	"sku-reader/domain"
 )
 
@@ -18,6 +16,7 @@ type ReportDTO struct {
 	Received  int
 	Unique    int
 	Discarded int
+	Skus      []string
 }
 
 func NewGenerateReportQueryHandler(messageRepository domain.MessageRepository) GenerateReportQueryHandler {
@@ -49,10 +48,7 @@ func (handler *GenerateReportQueryHandler) Handle(query GenerateReportQuery) Rep
 		report.Received++
 	}
 
-	err := handler.generateLogFile(skus)
-	if err != nil {
-		log.Println("error generating skus log file: " + err.Error())
-	}
+	report.Skus = skus
 
 	return report
 }
@@ -65,19 +61,4 @@ func (handler *GenerateReportQueryHandler) skuUnique(sku string, skus []string) 
 	}
 
 	return true
-}
-
-func (handler *GenerateReportQueryHandler) generateLogFile(skus []string) error {
-	file, err := os.OpenFile("skus.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	log.SetOutput(file)
-	for _, sku := range skus {
-		log.Println(sku)
-	}
-
-	return nil
 }

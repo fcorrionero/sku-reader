@@ -45,13 +45,11 @@ func main() {
 			// Proper error handling should be added, metrics server, etc
 			log.Fatal(err)
 		case <-finishReading:
-			report := skuController.GenerateReport(sessionId)
-			log.Println(report)
+			log.Println(skuController.GenerateReport(sessionId))
 			log.Println("PROCESS FINISHED")
 			return
 		case <-ctx.Done():
-			report := skuController.GenerateReport(sessionId)
-			log.Println(report)
+			log.Println(skuController.GenerateReport(sessionId))
 			log.Println("PROCESS FINISHED")
 			return
 		}

@@ -2,6 +2,7 @@ directory = $(PWD)
 build:
 	mkdir -p build
 	go mod download
+	go mod tidy
 	cd cmd && go build -o ${directory}/build/sku_reader
 
 setup-env:

@@ -7,6 +7,7 @@ You need docker-compose and go installed in your machine
 
 ### Run the project
 
+From the project directory
 ```
 make run
 ```

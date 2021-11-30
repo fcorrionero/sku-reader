@@ -1,6 +1,8 @@
+directory = $(PWD)
 build:
 	mkdir -p build
-	cd cmd && go build -o ../build/sku_reader
+	go mod download
+	cd cmd && go build -o ${directory}/build/sku_reader
 
 setup-env:
 	cd etc/dev/docker && docker-compose up -d

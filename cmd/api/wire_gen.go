@@ -4,7 +4,7 @@
 //go:build !wireinject
 // +build !wireinject
 
-package sku_reader
+package main
 
 import (
 	"context"
@@ -13,10 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net"
+	"sku-reader"
 	"sku-reader/application"
+	"sku-reader/cmd/api/controller"
 	"sku-reader/domain"
 	"sku-reader/infrastructure/persistence"
-	"sku-reader/infrastructure/socket"
 )
 
 // Injectors from wire.go:
@@ -38,12 +39,12 @@ func initializeGenerateReportQueryHandler(repository domain.MessageRepository) a
 	return generateReportQueryHandler
 }
 
-func InitializeSkuController(ctx context.Context, listener net.Listener) socket.SkuController {
+func InitializeSkuController(ctx context.Context, listener net.Listener) controller.SkuController {
 	config := getConfig()
 	messageMongoRepository := initializeMongoDbRepository(ctx, config)
 	createMessageCommandHandler := initializeCreateMessageCommandHandler(messageMongoRepository)
 	generateReportQueryHandler := initializeGenerateReportQueryHandler(messageMongoRepository)
-	skuController := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
+	skuController := controller.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
 	return skuController
 }
 
@@ -79,11 +80,11 @@ func initializeMongoDbCollection(mongoClient *mongo.Client, cfg Config) *mongo.C
 
 func getConfig() Config {
 	return Config{
-		Host:           MongoHost,
-		Port:           MongoPort,
-		UserName:       Username,
-		Password:       Password,
-		CollectionName: CollectionName,
-		Database:       Database,
+		Host:           sku_reader.MongoHost,
+		Port:           sku_reader.MongoPort,
+		UserName:       sku_reader.Username,
+		Password:       sku_reader.Password,
+		CollectionName: sku_reader.CollectionName,
+		Database:       sku_reader.Database,
 	}
 }

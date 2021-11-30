@@ -29,7 +29,7 @@ func main() {
 
 	ctxConnections, cancelConnections := context.WithCancel(context.Background())
 	defer cancelConnections()
-	skuController := sku_reader.InitializeSkuController(ctxConnections, listener)
+	skuController := InitializeSkuController(ctxConnections, listener)
 
 	// UUID could be used but since we only can use standard library we use time instead
 	sessionId := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)

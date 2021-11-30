@@ -3,7 +3,7 @@ build:
 	mkdir -p build
 	go mod download
 	go mod tidy
-	cd cmd && go build -o ${directory}/build/sku_reader
+	go build -o ${directory}/build/sku-api sku-reader/cmd/api
 
 setup-env:
 	cd etc/dev/docker && docker-compose up -d
@@ -19,4 +19,4 @@ integration-test: setup-env
 	cd etc/dev/docker && docker-compose down
 
 run: build setup-env
-	cd build && ./sku_reader
+	cd build && ./sku-api

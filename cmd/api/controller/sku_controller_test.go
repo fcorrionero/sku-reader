@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package socket_test
+package controller_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"os"
 	"sku-reader/application"
 	"sku-reader/application/mock"
-	"sku-reader/infrastructure/socket"
+	sku_reader "sku-reader/cmd/api/controller"
 	"testing"
 	"time"
 )
@@ -46,7 +46,7 @@ func TestShouldHandleConnections(t *testing.T) {
 	createMessageCommandHandler := application.NewCreateMessageCommandHandler(repository)
 	generateReportQueryHandler := application.NewGenerateReportQueryHandler(repository)
 
-	controller := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
+	controller := sku_reader.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
 
 	sessionId := "test"
 	go controller.HandleConnections(sessionId, END_SEQUENCE, finishReading, errorStream)
@@ -90,7 +90,7 @@ func TestShouldEndWhenEndSequenceIsPresent(t *testing.T) {
 	createMessageCommandHandler := application.NewCreateMessageCommandHandler(repository)
 	generateReportQueryHandler := application.NewGenerateReportQueryHandler(repository)
 
-	controller := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
+	controller := sku_reader.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
 
 	sessionId := "test"
 	go controller.HandleConnections(sessionId, END_SEQUENCE, finishReading, errorStream)
@@ -141,7 +141,7 @@ func TestShouldEndWhenErrorIsPresent(t *testing.T) {
 	createMessageCommandHandler := application.NewCreateMessageCommandHandler(repository)
 	generateReportQueryHandler := application.NewGenerateReportQueryHandler(repository)
 
-	controller := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
+	controller := sku_reader.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
 
 	sessionId := "test"
 	go controller.HandleConnections(sessionId, END_SEQUENCE, finishReading, errorStream)
@@ -190,7 +190,7 @@ func TestShouldGenerateReport(t *testing.T) {
 	createMessageCommandHandler := application.NewCreateMessageCommandHandler(repository)
 	generateReportQueryHandler := application.NewGenerateReportQueryHandler(repository)
 
-	controller := socket.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
+	controller := sku_reader.NewSkuController(createMessageCommandHandler, generateReportQueryHandler, listener, ctx)
 
 	actualReport := controller.GenerateReport("id")
 	expectedReport := fmt.Sprintf("Received %d unique product skus, %d duplicates, %d discard values", 1, 1, 4)

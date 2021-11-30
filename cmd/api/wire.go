@@ -1,6 +1,6 @@
 //go:build wireinject
 
-package sku_reader
+package main
 
 import (
 	"context"
@@ -10,10 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net"
+	"sku-reader"
 	"sku-reader/application"
+	"sku-reader/cmd/api/controller"
 	"sku-reader/domain"
 	"sku-reader/infrastructure/persistence"
-	"sku-reader/infrastructure/socket"
 )
 
 type Config struct {
@@ -63,24 +64,24 @@ func initializeGenerateReportQueryHandler(repository domain.MessageRepository) a
 
 func getConfig() Config {
 	return Config{
-		Host:           MongoHost,
-		Port:           MongoPort,
-		UserName:       Username,
-		Password:       Password,
-		CollectionName: CollectionName,
-		Database:       Database,
+		Host:           sku_reader.MongoHost,
+		Port:           sku_reader.MongoPort,
+		UserName:       sku_reader.Username,
+		Password:       sku_reader.Password,
+		CollectionName: sku_reader.CollectionName,
+		Database:       sku_reader.Database,
 	}
 }
 
 func InitializeSkuController(
 	ctx context.Context,
-	listener net.Listener) socket.SkuController {
+	listener net.Listener) controller.SkuController {
 	wire.Build(
 		getConfig,
 		initializeMongoDbRepository,
 		wire.Bind(new(domain.MessageRepository), new(persistence.MessageMongoRepository)),
 		initializeCreateMessageCommandHandler,
 		initializeGenerateReportQueryHandler,
-		socket.NewSkuController)
-	return socket.SkuController{}
+		controller.NewSkuController)
+	return controller.SkuController{}
 }
